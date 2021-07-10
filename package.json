@@ -1,0 +1,39 @@
+{
+  "name": "@knowdev/jest",
+  "version": "0.0.1",
+  "description": "Jest extensions",
+  "license": "UNLICENSED",
+  "author": "Adam Finlayson",
+  "main": "src/index.js",
+  "scripts": {
+    "clean": "npm run test:clean",
+    "format": "sort-package-json && eslint --fix",
+    "lint": "eslint",
+    "prepare": "npm run prepare:husky",
+    "prepare:husky": "husky install",
+    "publish": "npm publish --access=public",
+    "test": "jest src/",
+    "test:clean": "rimraf coverage/",
+    "test:coverage": "jest --coverage src/"
+  },
+  "devDependencies": {
+    "eslint": "^7.30.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jest": "^24.3.6",
+    "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^7.0.1",
+    "hygen": "^6.1.0",
+    "jest": "^27.0.6",
+    "jest-extended": "^0.11.5",
+    "lint-staged": "^11.0.0",
+    "prettier": "^2.3.2",
+    "rimraf": "^3.0.2",
+    "sort-package-json": "^1.50.0"
+  },
+  "files": [
+    "/src",
+    "/README.md"
+  ]
+}
