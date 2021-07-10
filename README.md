@@ -24,9 +24,15 @@ module.exports = {
 
 ## 📝 Changelog
 
+* 0.1.0: adds `toBeClass()`
+
 ## 🛣 Roadmap
 
+N/A
+
 ### Wishlist 🌠
+
+N/A
 
 ## 📜 License
 
