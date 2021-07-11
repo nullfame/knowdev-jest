@@ -14,7 +14,8 @@
     "publish": "npm publish --access=public",
     "test": "jest src/",
     "test:clean": "rimraf coverage/",
-    "test:coverage": "jest --coverage src/"
+    "test:coverage": "jest --coverage src/",
+    "postversion": "npm publish"
   },
   "devDependencies": {
     "eslint": "^7.30.0",
