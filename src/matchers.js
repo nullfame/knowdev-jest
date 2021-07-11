@@ -1,32 +1,45 @@
-const failedMatcherReceived = (matcher, received) => () =>
-  `Expectation \`${matcher}\` received "${received}"`;
+// const matcherResponse = (pass, matcher, received, expected) => {
+//   if(pass) {
+//     return {
+//       pass,
+//       message: () => `Matcher \`not.${matcher}\` expected NOT "${expected}" but received "${received}"`,
+//     }
+//   }
+//   return {
+//     pass,
+//     message: () => `Matcher \`${matcher}\` expected "${expected}" but received "${received}"`,
+//   };
+// }
 
-const successMatcherReceived = (matcher, received) =>
-  failedMatcherReceived(`not.${matcher}`, received);
+const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
+  if (pass) {
+    return {
+      pass,
+      message: () => failNotMessage,
+    };
+  }
+  return {
+    pass,
+    message: () => failMessage,
+  };
+};
 
 module.exports = {
-  toBeClass: (ExpectingClass) => {
+  toBeClass: (received) => {
     let pass = false;
-    if (typeof ExpectingClass === "function") {
+    if (typeof received === "function") {
       try {
-        // eslint-disable-next-line no-new
-        new ExpectingClass();
+        // eslint-disable-next-line new-cap, no-new
+        new received();
         pass = true;
       } catch (e) {
         pass = false;
       }
     }
-
-    if (pass) {
-      return {
-        pass,
-        message: successMatcherReceived("toBeClass", ExpectingClass),
-      };
-    }
-
-    return {
+    return matcherResponseWithMessages(
       pass,
-      message: failedMatcherReceived("toBeClass", ExpectingClass),
-    };
+      `Expectation \`toBeClass\` expected class but received "${received}"`,
+      `Expectation \`not.toBeClass\` received class "${received.name}"`
+    );
   },
 };
