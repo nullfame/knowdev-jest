@@ -11,7 +11,6 @@
     "lint": "eslint",
     "prepare": "npm run prepare:husky",
     "prepare:husky": "husky install",
-    "publish": "npm publish --access=public",
     "test": "jest src/",
     "test:clean": "rimraf coverage/",
     "test:coverage": "jest --coverage src/",
