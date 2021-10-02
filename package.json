@@ -13,6 +13,7 @@
     "prepare:husky": "husky install",
     "test": "jest src/",
     "test:clean": "rimraf coverage/",
+    "test:spec:toBeCalledWithInitialParams": "jest src/__tests__/toBeCalledWithInitialParams.spec.js",
     "test:coverage": "jest --coverage src/",
     "postversion": "npm publish"
   },

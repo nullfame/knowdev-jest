@@ -25,6 +25,26 @@ const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
 };
 
 module.exports = {
+  toBeCalledWithInitialParams: (received, ...passed) => {
+    let pass;
+
+    received.mock.calls.forEach((call) => {
+      if (call.length >= passed.length) {
+        let matching = true;
+        for (let i = 0; i < passed.length && matching; i += 1) {
+          if (passed[i] !== call[i]) matching = false;
+        }
+        pass = pass || matching;
+      }
+    });
+
+    if (pass === undefined) pass = false;
+    return matcherResponseWithMessages(
+      pass,
+      `Expectation \`toBeCalledWithInitialParams\` expected call beginning with [${passed},...]`,
+      `Expectation \`not.toBeCalledWithInitialParams\` did not expect call beginning with [${passed},...]`
+    );
+  },
   toBeClass: (received) => {
     let pass = false;
     if (typeof received === "function") {
