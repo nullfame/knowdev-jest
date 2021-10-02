@@ -1,16 +1,3 @@
-// const matcherResponse = (pass, matcher, received, expected) => {
-//   if(pass) {
-//     return {
-//       pass,
-//       message: () => `Matcher \`not.${matcher}\` expected NOT "${expected}" but received "${received}"`,
-//     }
-//   }
-//   return {
-//     pass,
-//     message: () => `Matcher \`${matcher}\` expected "${expected}" but received "${received}"`,
-//   };
-// }
-
 const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
   if (pass) {
     return {
