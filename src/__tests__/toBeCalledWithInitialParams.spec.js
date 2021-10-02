@@ -73,5 +73,13 @@ describe("toBeCalledWithInitialParams matcher", () => {
       mockFunction(1, 2, 3);
       expect(mockFunction).toBeCalledWithInitialParams();
     });
+    it("Matches arrays", () => {
+      mockFunction([1, 2, 3]);
+      expect(mockFunction).toBeCalledWithInitialParams([1, 2, 3]);
+    });
+    it("Matches objects", () => {
+      mockFunction({ one: 1 });
+      expect(mockFunction).toBeCalledWithInitialParams({ one: 1 });
+    });
   });
 });

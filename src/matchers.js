@@ -1,3 +1,5 @@
+const isEqual = require("lodash.isequal");
+
 const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
   if (pass) {
     return {
@@ -19,7 +21,7 @@ module.exports = {
       if (call.length >= passed.length) {
         let matching = true;
         for (let i = 0; i < passed.length && matching; i += 1) {
-          if (passed[i] !== call[i]) matching = false;
+          if (!isEqual(passed[i], call[i])) matching = false;
         }
         pass = pass || matching;
       }
