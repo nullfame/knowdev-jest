@@ -16,6 +16,14 @@ module.exports = {
 
 ## 📖 Reference
 
+### toBeAsyncIterator()
+
+Checks that a special symbol, `subject[Symbol.asyncIterator]`, exists and is a function.  Does not exercise iterator
+
+``` javascript
+expect(subject).toBeAsyncIterator();
+```
+
 ### toBeClass()
 
 Attempts to instantiate `subject`
@@ -44,6 +52,7 @@ expect(mockFunction).toBeCalledWithInitialParams(1, 2);
 
 ## 📝 Changelog
 
+* 0.3.0: adds `toBeAsyncIterator()`
 * 0.2.0: adds `toBeCalledWithInitialParams()`
 * 0.1.0: adds `toBeClass()`
 
