@@ -14,17 +14,16 @@ const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
 };
 
 module.exports = {
-  toBeAsyncIterator: (received) => {
+  toBeAsyncIterator: (received) =>
     // All we do is see if this special symbol exists on `received` and is a function
     // Could we do something more sophisticated?  Maybe
     // We could see if we can iterate over it, but that may have side effects
     // This is working right now
-    return matcherResponseWithMessages(
+    matcherResponseWithMessages(
       typeof received[Symbol.asyncIterator] === "function",
       `Expectation \`toBeAsyncIterator\` expected asyncIterator but received "${received}"`,
       `Expectation \`not.toBeAsyncIterator\` received asyncIterator "${received.name}"`
-    );
-  },
+    ),
   toBeCalledWithInitialParams: (received, ...passed) => {
     let pass;
 
