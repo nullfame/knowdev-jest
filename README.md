@@ -60,6 +60,8 @@ expect(() => functionCall(...params)).toThrowProjectError();
 
 ## 📝 Changelog
 
+* 1.0.0: arbitrary starting point
+* 0.4.0: adds `toThrowProjectError()` (unpublished)
 * 0.3.0: adds `toBeAsyncIterator()`
 * 0.2.0: adds `toBeCalledWithInitialParams()`
 * 0.1.0: adds `toBeClass()`
