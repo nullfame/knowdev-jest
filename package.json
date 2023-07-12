@@ -15,6 +15,7 @@
     "test:clean": "rimraf coverage/",
     "test:spec:toBeCalledWithInitialParams": "jest src/__tests__/toBeCalledWithInitialParams.spec.js",
     "test:spec:toBeClass": "jest src/__tests__/toBeClass.spec.js",
+    "test:spec:toThrowProjectError": "jest src/__tests__/toThrowProjectError.spec.js",
     "test:coverage": "jest --coverage src/",
     "postversion": "npm publish"
   },

@@ -1,3 +1,4 @@
+const { BadRequestError } = require("@knowdev/errors");
 const isEqual = require("lodash.isequal");
 
 const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
@@ -60,5 +61,32 @@ module.exports = {
       `Expectation \`toBeClass\` expected class but received "${received}"`,
       `Expectation \`not.toBeClass\` received class "${received.name}"`
     );
+  },
+  toThrowProjectError: (received) => {
+    // Make sure received is an function we can invoke
+    if (typeof received !== "function") {
+      throw new BadRequestError(
+        `Expectation \`toThrowProjectError\` expected a function but received "${received}"`
+      );
+    }
+
+    // Invoke the function and see if it throws
+    let pass = false;
+    try {
+      received();
+    } catch (error) {
+      pass = error.isProjectError || false;
+      return matcherResponseWithMessages(
+        pass,
+        `Expectation \`toThrowProjectError\` expected ProjectError but received "${error}"`,
+        `Expectation \`not.toThrowProjectError\` received ProjectError "${error.title}" (${error.status})`
+      );
+    }
+
+    return {
+      pass: false,
+      message: () =>
+        "Expectation `toThrowProjectError` expected ProjectError but no error was thrown",
+    };
   },
 };

@@ -46,6 +46,14 @@ mockFunction(1);
 expect(mockFunction).toBeCalledWithInitialParams(1, 2);
 ```
 
+### toThrowProjectError()
+
+Checks that the thrown error is an instance of `ProjectError`
+
+``` javascript
+expect(() => functionCall(...params)).toThrowProjectError();
+```
+
 ## 🚀 Deployment
 
 `npm run publish`
