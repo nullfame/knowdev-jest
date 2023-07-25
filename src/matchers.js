@@ -62,7 +62,7 @@ module.exports = {
       `Expectation \`not.toBeClass\` received class "${received.name}"`
     );
   },
-  toThrowProjectError: (received) => {
+  toThrowProjectError: async (received) => {
     // Make sure received is an function we can invoke
     if (typeof received !== "function") {
       throw new BadRequestError(
@@ -73,7 +73,11 @@ module.exports = {
     // Invoke the function and see if it throws
     let pass = false;
     try {
-      received();
+      if (received.constructor.name === "AsyncFunction") {
+        await received();
+      } else {
+        received();
+      }
     } catch (error) {
       pass = error.isProjectError || false;
       return matcherResponseWithMessages(

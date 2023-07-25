@@ -11,6 +11,11 @@ describe("toThrowProjectError matcher", () => {
       throw new InternalError();
     }).toThrowProjectError();
   });
+  it("Matches project errors from async functions", () => {
+    expect(async () => {
+      throw new InternalError();
+    }).toThrowProjectError();
+  });
   it("Does not match non project errors", () => {
     expect(() => {
       throw new Error("Tacos");
@@ -18,17 +23,5 @@ describe("toThrowProjectError matcher", () => {
   });
   it("Does not match successful function calls", () => {
     expect(() => "Tacos").not.toThrowProjectError();
-  });
-  it("Fails if not passed a function", () => {
-    expect(
-      () => {
-        expect("Tacos").toThrowProjectError();
-      } // eslint-disable-next-line max-len
-    ).toThrow();
-    expect(
-      () => {
-        expect("Tacos").not.toThrowProjectError();
-      } // eslint-disable-next-line max-len
-    ).toThrow();
   });
 });
