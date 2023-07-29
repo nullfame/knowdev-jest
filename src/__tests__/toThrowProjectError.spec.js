@@ -24,4 +24,9 @@ describe("toThrowProjectError matcher", () => {
   it("Does not match successful function calls", () => {
     expect(() => "Tacos").not.toThrowProjectError();
   });
+  describe("Allow passed values", () => {
+    it.todo("Will match a project error to a string");
+    it.todo("Will match a project error to a regex");
+    it.todo("Will match a project error to a project error");
+  });
 });
