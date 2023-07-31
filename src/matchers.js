@@ -93,4 +93,64 @@ module.exports = {
         "Expectation `toThrowProjectError` expected ProjectError but no error was thrown",
     };
   },
+  toThrowProjectErrorMatching: (callbackOrPromiseReturn, ...matchers) => {
+    const expectation = "toThrowProjectErrorMatching";
+    const isFromReject = this && this.promise === "rejects";
+    if (
+      (!callbackOrPromiseReturn ||
+        typeof callbackOrPromiseReturn !== "function") &&
+      !isFromReject
+    ) {
+      return {
+        pass: false,
+        message: () =>
+          `Expectation "${expectation}" expected function but received "${callbackOrPromiseReturn}"`,
+      };
+    }
+
+    // Loop over the matchers and make sure they are sting or regex
+    for (let i = 0; i < matchers.length; i += 1) {
+      const matcher = matchers[i];
+      if (typeof matcher !== "string" && !(matcher instanceof RegExp)) {
+        return {
+          pass: false,
+          message: () => {
+            const matcherType = typeof matcher;
+            return `Expectation "${expectation}" expected string or RegExp but received "${matcher}" (${matcherType})`;
+          },
+        };
+      }
+    }
+
+    let error;
+    if (isFromReject) {
+      error = callbackOrPromiseReturn;
+    } else {
+      try {
+        callbackOrPromiseReturn();
+      } catch (e) {
+        error = e;
+      }
+    }
+
+    if (error) {
+      if (error.isProjectError) {
+        return {
+          pass: true,
+          message: () =>
+            `Expectation "not.${expectation}" did not expect ProjectError but received "${error.title}": "${error.detail}"`,
+        };
+      }
+      return {
+        pass: false,
+        message: () =>
+          `Expectation "${expectation}" expected ProjectError but caught "${error}"`,
+      };
+    }
+    return {
+      pass: false,
+      message: () =>
+        `Expectation "${expectation}" expected ProjectError but no error was thrown`,
+    };
+  },
 };
