@@ -110,8 +110,60 @@ describe("toThrowProjectError matcher", () => {
         expect(response.pass).toBe(false);
         expect(response.message()).toMatch(/expected string or RegExp/i);
       });
-      it.todo("Will match a project error to a string");
-      it.todo("Will match a project error to a regex");
+      it("Will match a project error to a title string", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          "Internal Application Error"
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Will match a project error to a detail string", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          "An unexpected error occurred"
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Will fail when project error doesn't match string", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          "TacoError"
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected ProjectError to include/i);
+      });
+      it("Will match a project error to a title regex", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          /Application Error/
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Will match a project error to a detail regex", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          /unexpected error/
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Will fail when project error doesn't match regex", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          /TacoError/
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected ProjectError to match/i);
+      });
       it.todo("Will match a project error to a project error");
     });
   });

@@ -144,6 +144,31 @@ module.exports = {
 
     if (error) {
       if (error.isProjectError) {
+        // We know we have a ProjectError
+        // Loop over the matchers and make sure they match
+        for (let i = 0; i < matchers.length; i += 1) {
+          const matcher = matchers[i];
+          if (typeof matcher === "string") {
+            if (
+              error.title.indexOf(matcher) === -1 &&
+              error.detail.indexOf(matcher) === -1
+            ) {
+              return {
+                pass: false,
+                message: () =>
+                  `Expectation "${expectation}" expected ProjectError to include "${matcher}" but received "${error.title}" "${error.detail}"`,
+              };
+            }
+          } else if (matcher instanceof RegExp) {
+            if (!matcher.test(error.title) && !matcher.test(error.detail)) {
+              return {
+                pass: false,
+                message: () =>
+                  `Expectation "${expectation}" expected ProjectError to match "${matcher}" but received "${error.title}" "${error.detail}"`,
+              };
+            }
+          }
+        }
         return {
           pass: true,
           message: () =>
