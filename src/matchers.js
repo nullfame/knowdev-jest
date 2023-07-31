@@ -120,7 +120,31 @@ module.exports = {
     // Loop over the matchers and make sure they are sting or regex
     for (let i = 0; i < matchers.length; i += 1) {
       const matcher = matchers[i];
-      if (typeof matcher !== "string" && !(matcher instanceof RegExp)) {
+      // If it is a function, see if it response like a project error does to "new"
+      if (typeof matcher === "function") {
+        try {
+          const matcherError = new matcher(); // eslint-disable-line new-cap
+          if (!matcherError.isProjectError) {
+            return {
+              pass: false,
+              message: () =>
+                `Expectation "${expectation}" expected ProjectError generator but received "${matcherError}"`,
+            };
+          }
+        } catch (error) {
+          return {
+            pass: false,
+            message: () =>
+              `Expectation "${expectation}" expected ProjectError generator but "${matcher}" threw "${error.name}" "${error.message}"`,
+          };
+        }
+        // This is a valid function matcher
+      }
+      if (
+        typeof matcher !== "function" &&
+        typeof matcher !== "string" &&
+        !(matcher instanceof RegExp)
+      ) {
         return {
           pass: false,
           message: () => {
@@ -148,7 +172,19 @@ module.exports = {
         // Loop over the matchers and make sure they match
         for (let i = 0; i < matchers.length; i += 1) {
           const matcher = matchers[i];
-          if (typeof matcher === "string") {
+          if (typeof matcher === "function") {
+            const matcherError = new matcher(); // eslint-disable-line new-cap
+            if (
+              error.title !== matcherError.title ||
+              error.status !== matcherError.status
+            ) {
+              return {
+                pass: false,
+                message: () =>
+                  `Expectation "${expectation}" expected ProjectError to be "${matcherError.title}" (${matcherError.status}) but received "${error.title}" (${error.status})`,
+              };
+            }
+          } else if (typeof matcher === "string") {
             if (
               error.title.indexOf(matcher) === -1 &&
               error.detail.indexOf(matcher) === -1

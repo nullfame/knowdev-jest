@@ -1,4 +1,4 @@
-const { InternalError } = require("@knowdev/errors");
+const { InternalError, NotFoundError } = require("@knowdev/errors");
 
 const { toThrowProjectErrorMatching } = require("../matchers");
 
@@ -164,7 +164,43 @@ describe("toThrowProjectError matcher", () => {
         expect(response.pass).toBe(false);
         expect(response.message()).toMatch(/expected ProjectError to match/i);
       });
-      it.todo("Will match a project error to a project error");
+      it("Will match a project error to a project error", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          InternalError
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Will fail when project error doesn't match project error", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          NotFoundError
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected ProjectError to be/i);
+      });
+      it("Works if a nonsense function is passed", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          () => {}
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected ProjectError generator/i);
+      });
+      it("Works if a broken function is passed", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          functionThrowGenericError
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected ProjectError generator/i);
+        expect(response.message()).toMatch(/threw/i);
+      });
     });
   });
 });
