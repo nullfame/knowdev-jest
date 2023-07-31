@@ -93,8 +93,17 @@ module.exports = {
         "Expectation `toThrowProjectError` expected ProjectError but no error was thrown",
     };
   },
-  toThrowProjectErrorMatching: (callbackOrPromiseReturn, ...matchers) => {
+  // Must be function so we can use `this`
+  toThrowProjectErrorMatching(callbackOrPromiseReturn, ...matchers) {
     const expectation = "toThrowProjectErrorMatching";
+    const isFromResolve = this && this.promise === "resolves";
+    if (isFromResolve) {
+      return {
+        pass: false,
+        message: () =>
+          `Expectation "${expectation}" expected ProjectError but this promise was resolved`,
+      };
+    }
     const isFromReject = this && this.promise === "rejects";
     if (
       (!callbackOrPromiseReturn ||

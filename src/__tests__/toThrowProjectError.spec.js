@@ -28,6 +28,8 @@ describe("toThrowProjectError matcher", () => {
   });
   describe("Allow passed values", () => {
     const thisNoPromise = { promise: undefined };
+    const thisRejects = { promise: "rejects" };
+    const thisResolves = { promise: "resolves" };
     const functionThrowsProjectError = () => {
       throw new InternalError();
     };
@@ -35,54 +37,82 @@ describe("toThrowProjectError matcher", () => {
       throw new Error("Tacos");
     };
     const functionNoThrow = () => "Tacos";
-    it("Works", () => {
-      const response = toThrowProjectErrorMatching.call();
-      expect(response).toBeObject();
-      expect(response.pass).toBeBoolean();
-      expect(response.message).toBeFunction();
-      expect(response.message()).toBeString();
+    const rejectValueProjectError = new InternalError();
+    const rejectValueGenericError = new Error("Tacos");
+    describe("Synchronous functions", () => {
+      it("Matches project errors", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Does not match non project errors", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowGenericError
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected ProjectError but caught/i);
+      });
+      it("Does not match successful function calls", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionNoThrow
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(
+          /expected ProjectError but no error/i
+        );
+      });
+      it("Fails if not a function", () => {
+        const response = toThrowProjectErrorMatching.call(thisNoPromise, 12);
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected function but received/i);
+      });
     });
-    it("Matches project errors", () => {
-      const response = toThrowProjectErrorMatching.call(
-        thisNoPromise,
-        functionThrowsProjectError
-      );
-      expect(response.pass).toBe(true);
-      expect(response.message()).toMatch(/did not expect ProjectError/i);
+    describe("Asynchronous functions", () => {
+      it("Matches project errors", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisRejects,
+          rejectValueProjectError
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Does not match non project errors", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisRejects,
+          rejectValueGenericError
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected ProjectError but caught/i);
+      });
+      it("Does not match successful function calls", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisResolves,
+          "Success"
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(
+          /expected ProjectError but this promise/i
+        );
+      });
     });
-    it.todo("Matches project errors from async functions");
-    it("Does not match non project errors", () => {
-      const response = toThrowProjectErrorMatching.call(
-        thisNoPromise,
-        functionThrowGenericError
-      );
-      expect(response.pass).toBe(false);
-      expect(response.message()).toMatch(/expected ProjectError but caught/i);
+    describe("Matchers", () => {
+      it("Fails if anything passed is not string or regex", () => {
+        const response = toThrowProjectErrorMatching.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          12
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected string or RegExp/i);
+      });
+      it.todo("Will match a project error to a string");
+      it.todo("Will match a project error to a regex");
+      it.todo("Will match a project error to a project error");
     });
-    it("Does not match successful function calls", () => {
-      const response = toThrowProjectErrorMatching.call(
-        thisNoPromise,
-        functionNoThrow
-      );
-      expect(response.pass).toBe(false);
-      expect(response.message()).toMatch(/expected ProjectError but no error/i);
-    });
-    it("Fails if not a function", () => {
-      const response = toThrowProjectErrorMatching.call(thisNoPromise, 12);
-      expect(response.pass).toBe(false);
-      expect(response.message()).toMatch(/expected function but received/i);
-    });
-    it("Fails if anything passed is not string or regex", () => {
-      const response = toThrowProjectErrorMatching.call(
-        thisNoPromise,
-        functionThrowsProjectError,
-        12
-      );
-      expect(response.pass).toBe(false);
-      expect(response.message()).toMatch(/expected string or RegExp/i);
-    });
-    it.todo("Will match a project error to a string");
-    it.todo("Will match a project error to a regex");
-    it.todo("Will match a project error to a project error");
   });
 });
