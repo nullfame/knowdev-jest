@@ -208,6 +208,41 @@ describe("toThrowProjectError matcher", () => {
         expect(response.message()).toMatch(/expected ProjectError generator/i);
         expect(response.message()).toMatch(/threw/i);
       });
+      it("Will match multiple matchers", () => {
+        const response = toThrowProjectError.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          "Internal Application Error",
+          /unexpected error/,
+          InternalError
+        );
+        expect(response.pass).toBe(true);
+        expect(response.message()).toMatch(/did not expect ProjectError/i);
+      });
+      it("Will not match if even one of multiple matchers fails", () => {
+        const response = toThrowProjectError.call(
+          thisNoPromise,
+          functionThrowsProjectError,
+          "Internal Application Error",
+          /unexpected error/,
+          /taco town/,
+          InternalError
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/taco town/i);
+      });
+      it("Will not match if even one of multiple matchers fails", async () => {
+        const response = await toThrowProjectErrorAsync.call(
+          thisEmpty,
+          asyncFunctionThrowsProjectError,
+          "Internal Application Error",
+          /unexpected error/,
+          /taco town/,
+          InternalError
+        );
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/taco town/i);
+      });
     });
   });
 });
