@@ -1,5 +1,9 @@
-const { BadRequestError } = require("@knowdev/errors");
 const isEqual = require("lodash.isequal");
+
+//
+//
+// Helpers
+//
 
 const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
   if (pass) {
@@ -13,6 +17,108 @@ const matcherResponseWithMessages = (pass, failMessage, failNotMessage) => {
     message: () => failMessage,
   };
 };
+
+const returnProjectErrorMatching = (error, ...matchers) => {
+  if (error) {
+    if (error.isProjectError) {
+      // We know we have a ProjectError
+      // Loop over the matchers and make sure they match
+      for (let i = 0; i < matchers.length; i += 1) {
+        const matcher = matchers[i];
+        if (typeof matcher === "function") {
+          const matcherError = new matcher(); // eslint-disable-line new-cap
+          if (
+            error.title !== matcherError.title ||
+            error.status !== matcherError.status
+          ) {
+            return {
+              pass: false,
+              message: () =>
+                `Expected ProjectError to be "${matcherError.title}" (${matcherError.status}) but received "${error.title}" (${error.status})`,
+            };
+          }
+        } else if (typeof matcher === "string") {
+          if (
+            error.title.indexOf(matcher) === -1 &&
+            error.detail.indexOf(matcher) === -1
+          ) {
+            return {
+              pass: false,
+              message: () =>
+                `Expected ProjectError to include "${matcher}" but received "${error.title}" "${error.detail}"`,
+            };
+          }
+        } else if (matcher instanceof RegExp) {
+          if (!matcher.test(error.title) && !matcher.test(error.detail)) {
+            return {
+              pass: false,
+              message: () =>
+                `Expected ProjectError to match "${matcher}" but received "${error.title}" "${error.detail}"`,
+            };
+          }
+        }
+      }
+      return {
+        pass: true,
+        message: () =>
+          `Did not expect ProjectError but received "${error.title}": "${error.detail}"`,
+      };
+    }
+    return {
+      pass: false,
+      message: () => `Expected ProjectError but caught "${error}"`,
+    };
+  }
+  return {
+    pass: false,
+    message: () => `Expected ProjectError but no error was thrown`,
+  };
+};
+
+const validateMatchers = (matchers) => {
+  // Loop over the matchers and make sure they are sting or regex
+  for (let i = 0; i < matchers.length; i += 1) {
+    const matcher = matchers[i];
+    // If it is a function, see if it response like a project error does to "new"
+    if (typeof matcher === "function") {
+      try {
+        const matcherError = new matcher(); // eslint-disable-line new-cap
+        if (!matcherError.isProjectError) {
+          return {
+            pass: false,
+            message: () =>
+              `Expected ProjectError generator but received "${matcherError}"`,
+          };
+        }
+      } catch (error) {
+        return {
+          pass: false,
+          message: () =>
+            `Expected ProjectError generator but "${matcher}" threw "${error.name}" "${error.message}"`,
+        };
+      }
+      // This is a valid function matcher
+    }
+    if (
+      typeof matcher !== "function" &&
+      typeof matcher !== "string" &&
+      !(matcher instanceof RegExp)
+    ) {
+      return {
+        pass: false,
+        message: () => {
+          const matcherType = typeof matcher;
+          return `Expected string or RegExp but received "${matcher}" (${matcherType})`;
+        },
+      };
+    }
+  }
+};
+
+//
+//
+// Export
+//
 
 module.exports = {
   toBeAsyncIterator: (received) =>
@@ -62,40 +168,9 @@ module.exports = {
       `Expectation \`not.toBeClass\` received class "${received.name}"`
     );
   },
-  toThrowProjectError: async (received) => {
-    // Make sure received is an function we can invoke
-    if (typeof received !== "function") {
-      throw new BadRequestError(
-        `Expectation \`toThrowProjectError\` expected a function but received "${received}"`
-      );
-    }
-
-    // Invoke the function and see if it throws
-    let pass = false;
-    try {
-      if (received.constructor.name === "AsyncFunction") {
-        await received();
-      } else {
-        received();
-      }
-    } catch (error) {
-      pass = error.isProjectError || false;
-      return matcherResponseWithMessages(
-        pass,
-        `Expectation \`toThrowProjectError\` expected ProjectError but received "${error}"`,
-        `Expectation \`not.toThrowProjectError\` received ProjectError "${error.title}" (${error.status})`
-      );
-    }
-
-    return {
-      pass: false,
-      message: () =>
-        "Expectation `toThrowProjectError` expected ProjectError but no error was thrown",
-    };
-  },
   // Must be function so we can use `this`
-  toThrowProjectErrorMatching(callbackOrPromiseReturn, ...matchers) {
-    const expectation = "toThrowProjectErrorMatching";
+  toThrowProjectError(callbackOrPromiseReturn, ...matchers) {
+    const expectation = "toThrowProjectError";
     const isFromResolve = this && this.promise === "resolves";
     if (isFromResolve) {
       return {
@@ -117,43 +192,8 @@ module.exports = {
       };
     }
 
-    // Loop over the matchers and make sure they are sting or regex
-    for (let i = 0; i < matchers.length; i += 1) {
-      const matcher = matchers[i];
-      // If it is a function, see if it response like a project error does to "new"
-      if (typeof matcher === "function") {
-        try {
-          const matcherError = new matcher(); // eslint-disable-line new-cap
-          if (!matcherError.isProjectError) {
-            return {
-              pass: false,
-              message: () =>
-                `Expectation "${expectation}" expected ProjectError generator but received "${matcherError}"`,
-            };
-          }
-        } catch (error) {
-          return {
-            pass: false,
-            message: () =>
-              `Expectation "${expectation}" expected ProjectError generator but "${matcher}" threw "${error.name}" "${error.message}"`,
-          };
-        }
-        // This is a valid function matcher
-      }
-      if (
-        typeof matcher !== "function" &&
-        typeof matcher !== "string" &&
-        !(matcher instanceof RegExp)
-      ) {
-        return {
-          pass: false,
-          message: () => {
-            const matcherType = typeof matcher;
-            return `Expectation "${expectation}" expected string or RegExp but received "${matcher}" (${matcherType})`;
-          },
-        };
-      }
-    }
+    const invalidMatcherResponse = validateMatchers(matchers);
+    if (invalidMatcherResponse) return invalidMatcherResponse;
 
     let error;
     if (isFromReject) {
@@ -166,61 +206,20 @@ module.exports = {
       }
     }
 
-    if (error) {
-      if (error.isProjectError) {
-        // We know we have a ProjectError
-        // Loop over the matchers and make sure they match
-        for (let i = 0; i < matchers.length; i += 1) {
-          const matcher = matchers[i];
-          if (typeof matcher === "function") {
-            const matcherError = new matcher(); // eslint-disable-line new-cap
-            if (
-              error.title !== matcherError.title ||
-              error.status !== matcherError.status
-            ) {
-              return {
-                pass: false,
-                message: () =>
-                  `Expectation "${expectation}" expected ProjectError to be "${matcherError.title}" (${matcherError.status}) but received "${error.title}" (${error.status})`,
-              };
-            }
-          } else if (typeof matcher === "string") {
-            if (
-              error.title.indexOf(matcher) === -1 &&
-              error.detail.indexOf(matcher) === -1
-            ) {
-              return {
-                pass: false,
-                message: () =>
-                  `Expectation "${expectation}" expected ProjectError to include "${matcher}" but received "${error.title}" "${error.detail}"`,
-              };
-            }
-          } else if (matcher instanceof RegExp) {
-            if (!matcher.test(error.title) && !matcher.test(error.detail)) {
-              return {
-                pass: false,
-                message: () =>
-                  `Expectation "${expectation}" expected ProjectError to match "${matcher}" but received "${error.title}" "${error.detail}"`,
-              };
-            }
-          }
-        }
-        return {
-          pass: true,
-          message: () =>
-            `Expectation "not.${expectation}" did not expect ProjectError but received "${error.title}": "${error.detail}"`,
-        };
-      }
-      return {
-        pass: false,
-        message: () =>
-          `Expectation "${expectation}" expected ProjectError but caught "${error}"`,
-      };
+    return returnProjectErrorMatching(error, ...matchers);
+  },
+  // Must be function so we can use `this`
+  async toThrowProjectErrorAsync(asyncFunction, ...matchers) {
+    const invalidMatcherResponse = validateMatchers(matchers);
+    if (invalidMatcherResponse) return invalidMatcherResponse;
+
+    let error;
+    try {
+      await asyncFunction();
+    } catch (e) {
+      error = e;
     }
-    return {
-      pass: false,
-      message: () =>
-        `Expectation "${expectation}" expected ProjectError but no error was thrown`,
-    };
+
+    return returnProjectErrorMatching(error, ...matchers);
   },
 };
