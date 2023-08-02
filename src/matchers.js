@@ -113,6 +113,7 @@ const validateMatchers = (matchers) => {
       };
     }
   }
+  return false;
 };
 
 //
