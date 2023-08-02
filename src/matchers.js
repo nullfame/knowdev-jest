@@ -169,53 +169,41 @@ module.exports = {
     );
   },
   // Must be function so we can use `this`
-  toThrowProjectError(callbackOrPromiseReturn, ...matchers) {
-    const expectation = "toThrowProjectError";
-    const isFromResolve = this && this.promise === "resolves";
-    if (isFromResolve) {
+  toThrowProjectError(callback, ...matchers) {
+    if (!callback || typeof callback !== "function") {
       return {
         pass: false,
-        message: () =>
-          `Expectation "${expectation}" expected ProjectError but this promise was resolved`,
-      };
-    }
-    const isFromReject = this && this.promise === "rejects";
-    if (
-      (!callbackOrPromiseReturn ||
-        typeof callbackOrPromiseReturn !== "function") &&
-      !isFromReject
-    ) {
-      return {
-        pass: false,
-        message: () =>
-          `Expectation "${expectation}" expected function but received "${callbackOrPromiseReturn}"`,
+        message: () => `Expected function but received "${callback}"`,
       };
     }
 
-    const invalidMatcherResponse = validateMatchers(matchers);
-    if (invalidMatcherResponse) return invalidMatcherResponse;
-
-    let error;
-    if (isFromReject) {
-      error = callbackOrPromiseReturn;
-    } else {
-      try {
-        callbackOrPromiseReturn();
-      } catch (e) {
-        error = e;
-      }
-    }
-
-    return returnProjectErrorMatching(error, ...matchers);
-  },
-  // Must be function so we can use `this`
-  async toThrowProjectErrorAsync(asyncFunction, ...matchers) {
     const invalidMatcherResponse = validateMatchers(matchers);
     if (invalidMatcherResponse) return invalidMatcherResponse;
 
     let error;
     try {
-      await asyncFunction();
+      callback();
+    } catch (e) {
+      error = e;
+    }
+
+    return returnProjectErrorMatching(error, ...matchers);
+  },
+  // Must be function so we can use `this`
+  async toThrowProjectErrorAsync(asyncCallback, ...matchers) {
+    if (!asyncCallback || typeof asyncCallback !== "function") {
+      return {
+        pass: false,
+        message: () => `Expected function but received "${asyncCallback}"`,
+      };
+    }
+
+    const invalidMatcherResponse = validateMatchers(matchers);
+    if (invalidMatcherResponse) return invalidMatcherResponse;
+
+    let error;
+    try {
+      await asyncCallback();
     } catch (e) {
       error = e;
     }

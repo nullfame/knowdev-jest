@@ -101,6 +101,11 @@ describe("toThrowProjectError matcher", () => {
           /expected ProjectError but no error/i
         );
       });
+      it("Fails if not a function", async () => {
+        const response = await toThrowProjectErrorAsync.call(thisEmpty, 12);
+        expect(response.pass).toBe(false);
+        expect(response.message()).toMatch(/expected function but received/i);
+      });
     });
     describe("Matchers", () => {
       it("Fails if anything passed is not string or regex", () => {
