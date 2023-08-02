@@ -46,12 +46,19 @@ mockFunction(1);
 expect(mockFunction).toBeCalledWithInitialParams(1, 2);
 ```
 
-### toThrowProjectError()
+### toThrowProjectError(), toThrowProjectErrorAsync()
 
-Checks that the thrown error is an instance of `ProjectError`
+Checks that the thrown error is an instance of `ProjectError`. 
+Can be called with any of the following matchers, which much all match:
+
+* String (matches as a substring)
+* RegExp
+* ProjectError class
 
 ``` javascript
 expect(() => functionCall(...params)).toThrowProjectError();
+
+expect(() => functionCall(...params)).toThrowProjectError(InternalError, "Internal Application", /internal application/i);
 ```
 
 ## 🚀 Deployment
@@ -60,6 +67,7 @@ expect(() => functionCall(...params)).toThrowProjectError();
 
 ## 📝 Changelog
 
+* 1.0.2: Split `toThrowProjectError()` into sync and `totoThrowProjectErrorAsync()` versions
 * 1.0.1: `toThrowProjectError()` supports async functions
 * 1.0.0: arbitrary starting point
 * 0.4.0: adds `toThrowProjectError()` (unpublished)
